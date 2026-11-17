@@ -15,3 +15,7 @@ __pycache__/
 # Editors / OS
 *.swp
 .DS_Store
+
+# Claude
+./Claude
+/claude_plans
