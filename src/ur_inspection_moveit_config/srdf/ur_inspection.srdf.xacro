@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SRDF for UR + Zivid. Reuses Universal Robots' SRDF macro (group "ur_manipulator", named states
+  home/up/test_configuration, arm collision exemptions) and adds exemptions for the bracket and camera.
+  Only links that are rigidly attached to each other are exempted; the camera is still collision-checked
+  against the rest of the arm and the environment.
+-->
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="$(arg name)">
+  <xacro:arg name="name" default="ur"/>
+  <xacro:arg name="prefix" default="zivid_"/>
+  <xacro:property name="p" value="$(arg prefix)"/>
+
+  <xacro:include filename="$(find ur_moveit_config)/srdf/ur_macro.srdf.xacro"/>
+  <xacro:ur_srdf/>
+
+  <!-- Bracket and camera are rigid with the flange (wrist_3_link / tool0). -->
+  <disable_collisions link1="${p}mount_link" link2="wrist_3_link" reason="Adjacent"/>
+  <disable_collisions link1="${p}mount_link" link2="${p}base_link" reason="Adjacent"/>
+  <disable_collisions link1="${p}base_link" link2="wrist_3_link" reason="Never"/>
+</robot>

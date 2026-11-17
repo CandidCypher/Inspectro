@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<!--
+  Generic L-bracket that holds a Zivid camera beside the tool flange, looking along the
+  flange's +Z axis (the same direction as tool0's Z).
+
+  Frames (with prefix="zivid_"):
+    <parent> (tool0)
+      └─ zivid_mount_link          bracket (flange plate + vertical arm)
+           └─ zivid_base_link      camera body (from zivid_description), mounting face on the arm
+                └─ zivid_optical_frame   measurement frame: +Z = viewing direction
+
+  Geometry notes (zivid_description, Zivid 2+ meshes):
+    - In zivid_base_link the camera body spans x [-0.037, 0.083], y [-0.109, 0.059], z [0, 0.056] m;
+      its mounting face is the z = 0 plane and it looks along +X.
+    - Rotating by -90 deg about Y maps the camera's +X (view) onto the flange's +Z.
+  The bracket is approximate and for simulation/planning only. Hand-eye calibration is needed
+  for a real cell.
+-->
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <xacro:include filename="$(find zivid_description)/urdf/macros/zivid_camera.xacro"/>
+
+  <xacro:macro name="zivid_mount" params="parent prefix model field_of_view">
+
+    <!-- Bracket dimensions [m] -->
+    <xacro:property name="plate_t" value="0.012"/>   <!-- flange plate thickness -->
+    <xacro:property name="arm_x" value="-0.060"/>    <!-- outer face of vertical arm (camera mounting plane) -->
+    <xacro:property name="arm_t" value="0.012"/>     <!-- vertical arm thickness -->
+    <xacro:property name="arm_h" value="0.140"/>     <!-- vertical arm top (z in flange frame) -->
+    <xacro:property name="width" value="0.120"/>     <!-- bracket width (y) -->
+
+    <link name="${prefix}mount_link">
+      <inertial>
+        <origin xyz="-0.030 0 0.040" rpy="0 0 0"/>
+        <mass value="0.35"/>
+        <inertia ixx="0.0006" ixy="0" ixz="0" iyy="0.0006" iyz="0" izz="0.0006"/>
+      </inertial>
+      <!-- flange plate -->
+      <visual>
+        <origin xyz="${(arm_x + 0.050) / 2} 0 ${plate_t / 2}" rpy="0 0 0"/>
+        <geometry><box size="${0.050 - arm_x} ${width} ${plate_t}"/></geometry>
+        <material name="zivid_bracket_gray"><color rgba="0.35 0.35 0.38 1.0"/></material>
+      </visual>
+      <collision>
+        <origin xyz="${(arm_x + 0.050) / 2} 0 ${plate_t / 2}" rpy="0 0 0"/>
+        <geometry><box size="${0.050 - arm_x} ${width} ${plate_t}"/></geometry>
+      </collision>
+      <!-- vertical arm -->
+      <visual>
+        <origin xyz="${arm_x + arm_t / 2} 0 ${(plate_t + arm_h) / 2}" rpy="0 0 0"/>
+        <geometry><box size="${arm_t} ${width} ${arm_h - plate_t}"/></geometry>
+        <material name="zivid_bracket_gray"><color rgba="0.35 0.35 0.38 1.0"/></material>
+      </visual>
+      <collision>
+        <origin xyz="${arm_x + arm_t / 2} 0 ${(plate_t + arm_h) / 2}" rpy="0 0 0"/>
+        <geometry><box size="${arm_t} ${width} ${arm_h - plate_t}"/></geometry>
+      </collision>
+    </link>
+
+    <joint name="${prefix}mount_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${prefix}mount_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Camera body + optical frame from zivid_description -->
+    <xacro:zivid_camera prefix="${prefix}" model="${model}" field_of_view="${field_of_view}"/>
+
+    <!-- Camera mounting face on the arm's outer face; body centred in y; body starts just above the plate. -->
+    <joint name="${prefix}base_joint" type="fixed">
+      <parent link="${prefix}mount_link"/>
+      <child link="${prefix}base_link"/>
+      <origin xyz="${arm_x} 0.025 0.054" rpy="0 ${-pi / 2} 0"/>
+    </joint>
+
+  </xacro:macro>
+</robot>

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+  UR arm (default UR30) + Zivid 2+ MR60 on the tool flange.
+
+  This file reuses ur_robot_driver's top-level xacro unchanged (arm + ros2_control, including
+  use_mock_hardware), then attaches the camera. Every xacro arg that ur_robot_driver's
+  ur_rsp.launch.py passes in (ur_type, use_mock_hardware, robot_ip, ...) is declared by that
+  included file, so this description can be used via:
+    ur_control.launch.py description_launchfile:=$(ros2 pkg prefix ur_inspection_description)/share/ur_inspection_description/launch/rsp.launch.py
+-->
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="$(arg name)">
+  <xacro:arg name="name" default="ur"/>
+
+  <!-- Camera options -->
+  <xacro:arg name="zivid_model" default="ZIVID_2_PLUS_MR60"/>
+  <xacro:arg name="zivid_show_fov" default="false"/>
+
+  <!-- UR arm + ros2_control (world -> base_link ... tool0) -->
+  <xacro:include filename="$(find ur_robot_driver)/urdf/ur.urdf.xacro"/>
+
+  <!-- Bracket + Zivid camera on the flange -->
+  <xacro:include filename="$(find ur_inspection_description)/urdf/zivid_mount.xacro"/>
+  <xacro:zivid_mount
+    parent="$(arg tf_prefix)tool0"
+    prefix="zivid_"
+    model="$(arg zivid_model)"
+    field_of_view="$(arg zivid_show_fov)"/>
+</robot>

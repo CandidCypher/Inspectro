@@ -1,0 +1,17 @@
+# colcon
+build/
+install/
+log/
+
+# Source deps fetched from dependencies.repos
+src/external/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Editors / OS
+*.swp
+.DS_Store
